@@ -48,6 +48,6 @@ Simple script to condense a list of samples and their associated information int
 #### restClient.py
 
 #### vcf2bed.py
-Simple script to convert a VCF file, for instance as produced by GENOMESTRiP, to bed format. Most columns are already available but the end position needs to be extracted from the VCF information field. regions can optionally be padded, for
- instance to extract flanking sequence.
+Simple script to convert a VCF file, for instance as produced by GENOMESTRiP, to bed format. Most columns are already available but the end position needs to be extracted from the VCF information field. Regions can optionally be padded, for
+ instance to extract flanking sequence. Conversion from 1-based to 0-based is performed.
 
