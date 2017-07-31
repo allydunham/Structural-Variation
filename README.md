@@ -1,9 +1,9 @@
 # Structural Variation in Human Populations Code Repository
 **Author**: Alistair S. Dunham  
-**Affiliations**: University of Cambridge & Welcome Trust Sanger Institute  
+**Affiliation**: University of Cambridge & Welcome Trust Sanger Institute  
 **Email**: asd43@cam.ac.uk
 
-This repository contains the code used in my MPhill project, titled "Structural Variation in Human Populations", for reference and future use.
+This repository contains the code used in my MPhil project, titled "Structural Variation in Human Populations", for reference and future use. This project was carried out with the Tyler-Smith group at the Sanger Institute as part of the 'Computational Biology' MPhil course at DAMTP, University of Cambridge.
 
 ## Folders
 * *qualityControl* - Scripts used for QC of the 10X variant calls
@@ -41,9 +41,13 @@ A list of the different scripts and a more detailed description than in the main
 
 ## Miscellaneous Scripts
 #### colourbar.R
-#### gs2bed.py
+R function to place a customisable colour bar on plots. This is placed at a specific position on the current plot using the *fig* argument to *par()*, meaning it is positioned directly on the plot canvas and does not account for *mfrow* or *layout* settings. The labels, title and colour pallate can all be customised.
+
 #### popSummary.py
 Simple script to condense a list of samples and their associated information into a table giving all populations that are found, how many samples they have and the sample sexes, source and sequencing method.
 #### restClient.py
+
 #### vcf2bed.py
+Simple script to convert a VCF file, for instance as produced by GENOMESTRiP, to bed format. Most columns are already available but the end position needs to be extracted from the VCF information field.
+
 
