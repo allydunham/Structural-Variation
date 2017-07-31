@@ -22,9 +22,16 @@ import fileinput
 parser = argparse.ArgumentParser(description="Converts VCF files to bed formated regions. Only chr, start, stop and name are preserved. currently only set up for <DEL> and BND calls")
 parser.add_argument('vcfFile',metavar='V',type=str,help="path to VCF file")
 parser.add_argument('-p','--pad',dest='padLen',type=int,default=0,help='Number of bases to extend deletion region by')
+parser.add_argument('--len','-l',type=float,nargs=2,default=[0,10**9],help="Range of variant sizes to accept")
+parser.add_argument('--chrom','-c',action="store_false",help="Filter to canonical chromosome set (1-22,X,Y)")
 args = parser.parse_args()
 
-## Strem through and extract relavent information for bed formet
+## Accepted Chroms
+chroms = [''.join(['chr',str(x)]) for x in range(1,23)]
+chroms.append('chrX')
+chroms.append('chrY')
+
+## Stream through and extract relavent information for bed format
 with fileinput.input(args.vcfFile) as vcf:
 	for line in vcf:
 		if line[0] == '#':
@@ -43,5 +50,9 @@ with fileinput.input(args.vcfFile) as vcf:
 			end = next(vcf).strip().split("\t")[1]
 			name = t[2][:-2]
 		
-		print(t[0],max(int(t[1]) - args.padLen - 1,0),int(end) + args.padLen - 1,name,sep='\t')
+		length = int(end) - int(t[1])
+		if ((args.chrom or t[0] in chroms) and
+			length < args.len[1] and
+			length > args.len[0]):
+			print(t[0],max(int(t[1]) - args.padLen - 1,0),int(end) + args.padLen - 1,name,sep='\t')
 		
