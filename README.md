@@ -48,16 +48,21 @@ Command line script to group region depth reading proced from bam read files usi
 
 ## Filtering Scripts
 #### *bd_10X_overlap.py*
+Command line tool to determine BreakDancer variant calls which overlap with 10X longranger calls, based on a customisable minimum overlap proportion. A binary search is used to narrow down the region of calls to check, which greatly increases speed but means inputs must be sorted. The BreakDancer calls are loaded into memory and then 10X calls are streamed, determining overlap sequentially to reduce memory requirements.
+
 #### *bd_filtering.R*
+Script containing the code used to determine filtering criteria for the BreakDancer calls, based on the set which overlapped with the high quality filtered 10X calls. The selected filtering criteria are then tested against the overlap set and the GENOMESTRiP results. The filtering plots seen in the report are also produced here.
+
 #### *gs_bd_overlap.py*
-#### *merge10X2bed.py*
-#### *mergeBD2bed.py*
+Equivalent script to *bd_10X_overlap.py* but determining which GENOMESTRiP calls overlap with BreakDancer ones, using the same algorithm but adapted to the difeferent format. BreakDancer calls are loaded into memory since the GENOMESTRiP output tends to be a much larger file.
 
 ## Population genetics Scripts
 #### *getFeatureTable.py*
 #### *gsPopgen.R*
 #### *gsProcess.py*
 #### *importPopgen.R*
+#### *merge10X2bed.py*
+#### *mergeBD2bed.py*
 #### *popgen.R*
 #### *popgenFunctions.R*
 
