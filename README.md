@@ -1,15 +1,15 @@
 # Structural Variation in Human Populations Code Repository
-Author: Alistair S. Dunham  
-Affiliations: University of Cambridge & Welcome Trust Sanger Institute  
-Email: asd43@cam.ac.uk
+**Author**: Alistair S. Dunham  
+**Affiliations**: University of Cambridge & Welcome Trust Sanger Institute  
+**Email**: asd43@cam.ac.uk
 
 This repository contains the code used in my MPhill project, titled "Structural Variation in Human Populations", for reference and future use.
 
 ## Folders
-* qualityControl - Scripts used for QC of the 10X variant calls
-* breakdancerFiltering - Scripts used to determine and apply filtering to BreakDancer calls based on the 10X calls
-* popgen - Scripts performing the population genetic analyses
-* misc - Miscellaneous scripts used here but with more general function
+* *qualityControl* - Scripts used for QC of the 10X variant calls
+* *breakdancerFiltering* - Scripts used to determine and apply filtering to BreakDancer calls based on the 10X calls
+* *popgen* - Scripts performing the population genetic analyses
+* *misc* - Miscellaneous scripts used here but with more general function
 
 A list of the different scripts and a more detailed description than in the main report is given here. For any that require command line arguments the best description is obtained using the appropriate *script.file -h* command.
 
