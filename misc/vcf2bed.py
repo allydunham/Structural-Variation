@@ -43,5 +43,5 @@ with fileinput.input(args.vcfFile) as vcf:
 			end = next(vcf).strip().split("\t")[1]
 			name = t[2][:-2]
 		
-		print(t[0],int(t[1]) - args.padLen,int(end) + args.padLen,name,sep='\t')
+		print(t[0],max(int(t[1]) - args.padLen - 1,0),int(end) + args.padLen - 1,name,sep='\t')
 		
