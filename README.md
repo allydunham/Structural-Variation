@@ -11,14 +11,11 @@ This repository contains the code used in my MPhil project, titled "Structural V
 * *popgen* - Scripts performing the population genetic analyses
 * *misc* - Miscellaneous scripts used here but with more general function
 
-A list of the different scripts and a more detailed description than in the main report is given here. For any that require command line arguments the best description is obtained using the appropriate *script.file -h* command.
+A list of the different scripts and a more detailed description than in the main report is given here. For any that require command line arguments the best description is obtained using the appropriate *script.file -h* command. Scripts are split into sections and ordered by general usage point in the analysis, although primary scripts are listed before dependancies.
 
 ## Quality Control Scripts
-#### *combinedQC.R*
-R script containing the code used to train and cross-validate teh various models. It was used interactively to train all the models (see example *combinedQC_rawDataOnly.R*), optimise them and determine which factors to use.
-
-#### *combinedQC_rawDataOnly.R*
-Equivalent script only using the raw longranger data and before tuning. It was used to train the original models.
+#### *preProcess10xBatch.sh*
+Example shell script to run all preprocessing analyses for longranger data, generating read depths, and a fasta file of the regions then running *preProcess3.py*. It also shows setup for running on a list of files in a batch job array, using an id table to direct each job to the right files. Directory structures have been made generic for clarity.
 
 #### *preProcess3.py*
 Command line tool to process longranger output ready for classification (training and classifying). It can add any of the possible extra genomic statistics to a currently processed dataset or process one from scratch with the selected information. It can add:
@@ -31,8 +28,14 @@ Command line tool to process longranger output ready for classification (trainin
 #### *preProcess2.py*
 Equivalent script to *preProcess3.py* but using the REST client (*misc/restClient.py*) rather than extracting GC from a fasta file of the regions.
 
-#### *preProcess10xBatch.sh*
-Example shell script to run all preprocessing analyses for longranger data, generating read depths, and a fasta file of the regions then running *preProcess3.py*. It also shows setup for running on a list of files in a batch job array, using an id table to direct each job to the right files. Directory structures have been made generic for clarity.
+#### *regionDepths.py*
+Command line script to group region depth reading proced from bam read files using *samtools depth*, into lists of regions defined in an input bed file.
+
+#### *combinedQC.R*
+R script containing the code used to train and cross-validate teh various models. It was used interactively to train all the models (see example *combinedQC_rawDataOnly.R*), optimise them and determine which factors to use.
+
+#### *combinedQC_rawDataOnly.R*
+Equivalent script only using the raw longranger data and before tuning. It was used to train the original models.
 
 #### *QC_functions.R*
 Supporting QC functions for classifiction, including functions for calculating all the metrics used (FDR, FPR, FNR, sensitivity, specificity, precision, accuracy, F1 and Kappa), generallised cross-validation and feature selection. It also includes the function for constructing the ensemble classifier and predicting with it.
@@ -43,28 +46,59 @@ Script to generate the QC plots seen in the report, apart from ROC curves which 
 #### *qualityControl.R*
 Command line R script implementing the final random forest model. It supports training, model saving/loading and classification, all over lists of file inputs.
 
-#### *regionDepths.py*
-Command line script to group region depth reading proced from bam read files using *samtools depth*, into lists of regions defined in an input bed file.
+
 
 ## Filtering Scripts
-#### *bd_10X_overlap.py*
-Command line tool to determine BreakDancer variant calls which overlap with 10X longranger calls, based on a customisable minimum overlap proportion. A binary search is used to narrow down the region of calls to check, which greatly increases speed but means inputs must be sorted. The BreakDancer calls are loaded into memory and then 10X calls are streamed, determining overlap sequentially to reduce memory requirements.
-
 #### *bd_filtering.R*
 Script containing the code used to determine filtering criteria for the BreakDancer calls, based on the set which overlapped with the high quality filtered 10X calls. The selected filtering criteria are then tested against the overlap set and the GENOMESTRiP results. The filtering plots seen in the report are also produced here.
+
+#### *bd_10X_overlap.py*
+Command line tool to determine BreakDancer variant calls which overlap with 10X longranger calls, based on a customisable minimum overlap proportion. A binary search is used to narrow down the region of calls to check, which greatly increases speed but means inputs must be sorted. The BreakDancer calls are loaded into memory and then 10X calls are streamed, determining overlap sequentially to reduce memory requirements.
 
 #### *gs_bd_overlap.py*
 Equivalent script to *bd_10X_overlap.py* but determining which GENOMESTRiP calls overlap with BreakDancer ones, using the same algorithm but adapted to the difeferent format. BreakDancer calls are loaded into memory since the GENOMESTRiP output tends to be a much larger file.
 
+#### *bd_filter.py*
+Command line tool to apply the selected filtering to a BreakDancer output file, with options to specify filters for:
+* Length (upper and lower bounds)
+* Quality Score (lower bound)
+* Read Depth (upper and lower bounds)
+* Supporting Read Ratio (lower bound)
+* Copynumber
+* Variant Type
+* Chromosome (Restrict to the cannonical 1-22,X,Y)
+* Centromere (Filter Ensembl GRCh38 centromere regions)
+* Genomic Gaps (based ona supplied gap table)
+
 ## Population genetics Scripts
+#### *merge10X2bed.py* and *mergeBD2bed.py*
+Equivalent scripts which merge input 10X or BreakDancer output files into a single bed formatted file, with the ID field storing information about the source sample. This bed file can then be fed to *bedtools* *merge* and *cluster* to perform call merging and assigning each samples calls to their merged counterpart. This is not a very sophisticated method, not even checking for the degree of overlap, but it was found to perform very well accross all samples, with very few calls getting incorrectly merged. In general variants aligned reasonably well and did not overlap with others.
+
 #### *getFeatureTable.py*
-#### *gsPopgen.R*
+Script to convert merged and clustered BreakDancer and 10X call sets into a binary table of features. The table has rows for each calls and columns indicating whether the call was found in each sample.
+
 #### *gsProcess.py*
-#### *importPopgen.R*
-#### *merge10X2bed.py*
-#### *mergeBD2bed.py*
+Script to process GENOMESTRiP output, translating it into (optionally) a bed file, an information table and a copynumber table, with copynumber per call on each row in columns for each sample. The information table unpacks the VCF information field into a tsv file for easy analysis in R.
+
 #### *popgen.R*
+R script containing code to perform all population genetic analyses on the BreakDancer callset and produce the output plots. It performs:
+* Hierarchical Clustering
+* Principal Component Analysis
+* Site Frequency
+* Fst and Burden Estimation
+* Functional Analysis
+
+It also supports data saving and preloading to prevent the long import being done every time.
+
+#### *gsPopgen.R*
+Equivalent script to *popgen.R* but using the GENOMESTRiP calls. It performs the same set of analysis but extends them, using genotype information to calculate real Fst and burden values and partitions PCA by region.
+
+#### *importPopgen.R*
+Script to import the population genetic data (apart from VEP data which is imported in the appropriate script). It was separated out to tidy the two primary scripts.
+
 #### *popgenFunctions.R*
+Script containing supporting population genetic functions, primarily used to convert feature tables into GenePop format and to read in the pairwise statistics tables produced by *diveRsity*'s *diffCalc* function, used over *fastDivPart* because of the laters very high memory usage with this dataset (>90GB RAM without bootstrapping, *diffCalc* used <60GB with 10 bootstraps).
+
 
 ## Miscellaneous Scripts
 #### *colourbar.R*
