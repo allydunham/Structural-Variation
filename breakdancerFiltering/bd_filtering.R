@@ -68,37 +68,37 @@ bds_nonoverlap.all <- bds_all.all[!bds_all.all$ID %in% bds_overlap.all$ID,]
 pdf("Figures/bdFiltering.pdf",10,14)
 par(oma=c(4,1,4,1),xpd=FALSE)
 layout(rbind(c(1,2),c(3,4),c(5,5)))
-plot(density(bds_overlap.all$Score),col="blue",xlim=c(30,100),main = "A. Call Score",xlab = "Score")
+plot(density(bds_overlap.all$Score),col="blue",xlim=c(30,100),main = "A. Call Score",xlab = "Score",cex.main=1.5,cex.lab=1.5,cex.axis=1.5)
 lines(density(bds_nonoverlap.all$Score),col="red")
 abline(v=c(93),lwd=1.5)
 
 ## Similarly for length. Also see LINE (and SINE?) peaks? - could be a result of call size difference between bd and longranger
 hist(bds_nonoverlap.all$Size,breaks = 100000,freq = FALSE,col=rgb(1,0,0,1),xlim=c(0,100000),ylim=c(0,0.0004),
-     main = "B. Length",xlab = "Length")
+     main = "B. Length",xlab = "Length",cex.main=1.5,cex.lab=1.5,cex.axis=1.5)
 hist(bds_overlap.all$Size,freq = FALSE,col=rgb(0,0,1,0.6),add=TRUE)
 abline(v=c(200,30000),lwd=1.5)
 
 ## Read Depths
 hist(bds_overlap.all$num_Reads,col="blue",ylim=c(0,0.1),freq=FALSE,xlim = c(0,1000),
-     main = "C. Supporting Reads",xlab = "Number of Reads")
+     main = "C. Supporting Reads",xlab = "Number of Reads",cex.main=1.5,cex.lab=1.5,cex.axis=1.5)
 hist(bds_nonoverlap.all$num_Reads,col="red",freq=FALSE,add=TRUE)
 abline(v=c(0,50),lwd=1.5)
 
 ## estimated CN
 hist(bds_nonoverlap.all$bam,col=rgb(1,0,0,1),freq=FALSE,xlim = c(-10,10),ylim = c(0,2),breaks = 10000,
-     main = "D. Copy Number Estimate",xlab = "CN Estimate")
+     main = "D. Copy Number Estimate",xlab = "CN Estimate",cex.main=1.5,cex.lab=1.5,cex.axis=1.5)
 hist(bds_overlap.all$bam,col=rgb(0,0,1,0.6),freq=FALSE,add=TRUE)
 abline(v=c(0,5),lwd=1.5)
 
 ## Read Ratio
-hist(bds_nonoverlap.all$readRatio,col=rgb(1,0,0,0.75),main = "E. Supporting Read Ratio",xlab = "Read Ratio")
+hist(bds_nonoverlap.all$readRatio,col=rgb(1,0,0,0.75),main = "E. Supporting Read Ratio",xlab = "Read Ratio",cex.main=1.5,cex.lab=1.5,cex.axis=1.5)
 hist(bds_overlap.all$readRatio,col=rgb(0,0,1,0.75),add=TRUE)
 abline(v=c(0.6,1),lwd=1.5)
 
-legend(0.5,-8000,c("10X Overlap","No Overlap","Filter Boundary"),fill=c("blue","red",NA),
+legend(0.5,-2500,c("10X Overlap","No Overlap","Filter Boundary"),fill=c("blue","red",NA),
        horiz = TRUE,bty = "n",xpd=NA,xjust = 0.5,lty=c(NA,NA,1),border=c("blue","red",NA),
-       x.intersp = c(-0.5,-0.5,0.5),lwd = c(NA,NA,2))
-title("BreakDancer Filtering Criteria",outer=TRUE)
+       x.intersp = c(-0.5,-0.5,0.5),lwd = c(NA,NA,2),cex = 1.5)
+title("BreakDancer Filtering Criteria",outer=TRUE,cex.main=2.5)
 dev.off()
 
 ## oddities in breakpoint read mapping
