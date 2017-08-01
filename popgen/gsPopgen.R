@@ -422,6 +422,69 @@ diveRsityStats <- diveRsityStats[1:(dim(diveRsityStats)[1]-1),]
 
 hist(diveRsityStats$Fst)
 
+## Check against distance
+getCoords <- function(x){
+  x <- gsub("[ \t\n\r\v\f]","",x)
+  sp <- strsplit(x,",")[[1]]
+  north <- as.numeric(gsub("[SN]","",sp[1]))
+  if (grepl("S",sp[1])){
+    north <- -1* north
+  }
+  east <- as.numeric(gsub("[EW]","",sp[2]))
+  if (grepl("W",sp[2])){
+    east <- -1* east
+  }
+  return(c(north,east))
+}
+
+## Degrees to radians
+deg2rad <- function(x){pi * x / 180}
+
+## Haversine function
+hav <- function(x){(1 - cos(x))/2}
+
+## Function for great circle distance
+greatDist <- function(x1,x2,r = 6.3781366E6){
+  h <- hav(x2[1] - x1[1]) + cos(x1[1])*cos(x2[1])*hav(x2[2] - x1[2])
+  return(2 * r * asin(sqrt(h)))
+}
+
+loc <- read.table("meta/location",sep="\t",stringsAsFactors = FALSE)
+colnames(loc) <- c("Country","Coords","Population")
+
+t <- sapply(loc$Coords,getCoords)
+loc$lat <- t[1,]
+loc$long <- t[2,]
+
+dists <- apply(loc,1,function(x1){apply(loc,1,function(x2){greatDist(deg2rad(as.numeric(x1[c(4,5)])),deg2rad(as.numeric(x2[c(4,5)])))})})
+colnames(dists) <- gsub("-","",loc$Population)
+rownames(dists) <- colnames(dists)
+diag(dists) <- NA
+
+dists <- dists[colnames(pairwiseMetrics$Fst),colnames(pairwiseMetrics$Fst)]
+
+p <- xy.coords(dists/1000,as.matrix(pairwiseMetrics$Fst))
+di <- p$x[!is.na(p$x)]
+fst <- p$y[!is.na(p$y)]
+fit <- lm(fst ~ di)
+s <- summary(fit)
+
+## Get colours for points of the same region (turned out to have no pattern)
+tt <- gsub("HanNChina","Han-NChina",colnames(dists))
+co <- sapply(tt,function(x){sapply(tt,function(y){if(popRegs[x] == popRegs[y]){return(regCols[popRegs[x]])}else{return("black")}})})
+
+pdf("Figures/GSfst_dists.pdf",12,8)
+par(mar=c(4,5,4,2),oma=c(0,0,0,0))
+plot(di,fst,pch=20,col="cornflowerblue",
+     xlab = "Distance (km)",ylab = expression("F"[st]),
+     main = expression("Relationship between Distance and F"[st]),
+     xlim = c(0,20000),ylim = c(0,0.4),bty="n", xaxs="i", yaxs="i",xpd=NA,
+     cex.main=2,cex.lab=1.5,cex.axis=1.5)
+abline(fit$coefficients[1],fit$coefficients[2],lwd=1.5)
+abline(fit$coefficients[1] + qnorm(0.995) * s$coefficients[1,2],fit$coefficients[2] + qnorm(0.995) * s$coefficients[2,2],lwd=1.5,lty=2)
+abline(fit$coefficients[1] - qnorm(0.995) * s$coefficients[1,2],fit$coefficients[2] - qnorm(0.995) * s$coefficients[2,2],lwd=1.5,lty=2)
+dev.off()
+
 ###### Site Frequency ######
 sitefreq <- rowSums(GSfeats.delGenotype.noNA)
 impactCalls <- unique(gsVEPimpactsRed[gsVEPimpactsRed$IMPACT %in% c("MODERATE","HIGH"),"call"])
