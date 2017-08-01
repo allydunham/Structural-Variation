@@ -63,6 +63,13 @@ setwd('~/Project/')
 load("results/GSpopgenImport.Rdata")
 source("scripts/popgenFunctions.R")
 
+## Population names, as ordered by popCols
+popNames <- c("Mbuti","Biaka","Mandenka","Yoruba","San","Bantu (S. Africa)","Bantu (Kenya)","Colombian","Surui","Maya","Karitiana","Pima","Brahui",
+              "Balochi","Hazara","Makrani","Sindhi","Pathan","Kalash","Burusho","Uygur","Cambodian","Japanese","Han","Yakut","Tujia","Yi","Miao",
+              "Oroqen","Daur","Mongola","Hezhen","Xibo","Han (North)","Dai","Lahu","She","Naxi","Tu","French","Sardinian","Orcadian","Russian",
+              "Italian","Tuscan","Basque","Adygei","Druze","Bedouin","Palestinian","Mozabite","Melanesian","Papuan")
+
+
 ## Filter any unclear calls and those with no deletions
 GSfeats.delGenotype.noNA <- GSfeats.delGenotype[rowSums(is.na(GSfeats.delGenotype)) == 0,]
 GSfeats.delGenotype.noNA <- GSfeats.delGenotype.noNA[!rowSums(GSfeats.delGenotype.noNA) == 0,]
@@ -146,35 +153,35 @@ legend("bottomright",legend = unique(ps),col=unique(as.factor(ps)),bty="n",pch=2
 pcGS.reg <- lapply(sort(unique(popsGS$region)),function(x){prcomp(t(GSfeats.delGenotype.noNA[,popsGS[popsGS$region == x,"sample_accession"]]),tol=10^-10)})
 names(pcGS.reg) <- sort(unique(popsGS$region))
   
-pdf("Figures/GSpca_regions1.pdf",8,12)
-par(oma=c(1,1,3,1))
-layout(rbind(c(1,1,1,2),c(3,3,3,4),c(5,5,5,6),c(7,7,7,8)))
-nam <- c("A. Africa","B. America", "C. Oceania","tt")
-reg <- c("CENTRAL_SOUTH_ASIA","EAST_ASIA","EUROPE","MIDDLE_EAST")
+pdf("Figures/GSpca_regions1.pdf",10,12)
+par(oma=c(1,2,3,1))
+layout(rbind(c(1,1,1,2),c(3,3,3,4),c(5,5,5,6)))
+nam <- c("A. Africa","B. America", "C. Oceania")
+reg <- c("AFRICA","AMERICA","OCEANIA")
 for (i in 1:length(reg)){
   r <- reg[i]
   ps <- popsGS[popsGS$region == r,"population"]
   vars = round(pcGS.reg[[r]]$sdev^2/sum(pcGS.reg[[r]]$sdev^2) * 100)
-  par(mar=c(4,4,4,0))
+  par(mar=c(4,5,4,0))
   plot(pcGS.reg[[r]]$x[,1],pcGS.reg[[r]]$x[,2],pch=20,col=as.factor(ps),
        xlab = paste0("PC1 (",vars[1],"%)"),ylab = paste0("PC2 (",vars[2],"%)"),
-       main = nam[i])
+       main = nam[i],cex.axis=1.5,cex.lab=1.5,cex.main=1.8)
   par(mar=c(0,2,0,0))
   plot(NA,axes=FALSE,ylim=c(0,1),xlim=c(0,1),xlab="",ylab = "")
   if (r == "AFRICA"){
     legend(0,0.5,yjust = 0.5,legend = c("Mbuti","Biaka","Mandenka","Yoruba","San","Bantu (S. Africa)","Bantu (Kenya)"),col = as.factor(unique(ps)),bty="n",pch=20,xpd=NA,
-           title = expression(bold("Population")))
+           title = expression(bold("Population")),cex=2)
   } else {
     legend(0,0.5,yjust = 0.5,legend = unique(ps),col = as.factor(unique(ps)),bty="n",pch=20,xpd=NA,
-         title = expression(bold("Population")))
+         title = expression(bold("Population")),cex=2)
   }
 }
-title("Principal Component Analysis of GenomeSTRiP Deletion Genotypes by Region",outer = TRUE,cex.main=1.5)
-mtext("Regions with Differentiation",outer = TRUE,cex=1.2,padj = 0.5)
+title("Principal Component Analysis of GenomeSTRiP Deletion Genotypes by Region",outer = TRUE,cex.main=2)
+mtext("Regions with Differentiation",outer = TRUE,cex=1.5,padj = 0.6)
 dev.off()
 
 pdf("Figures/GSpca_regions2.pdf",12,10)
-par(mar=c(4,4,4,4),oma=c(1,1,5,1))
+par(mar=c(4,5,4,4),oma=c(1,1,5,1))
 layout(rbind(c(1,2),c(3,4)))
 nam <- c("A. Central & South Asia","B. East Asia","C. Europe","D. Middle East")
 reg <- c("CENTRAL_SOUTH_ASIA","EAST_ASIA","EUROPE","MIDDLE_EAST")
@@ -184,10 +191,10 @@ for (i in 1:length(reg)){
   vars = round(pcGS.reg[[r]]$sdev^2/sum(pcGS.reg[[r]]$sdev^2) * 100)
   plot(pcGS.reg[[r]]$x[,1],pcGS.reg[[r]]$x[,2],pch=20,col=popCols[ps],
        xlab = paste0("PC1 (",vars[1],"%)"),ylab = paste0("PC2 (",vars[2],"%)"),
-       main = nam[i])
+       main = nam[i],cex.axis=1.5,cex.lab=1.5,cex.main=1.8)
 }
-title("Principal Component Analysis of GenomeSTRiP Deletion Genotypes by Region",outer = TRUE,cex.main=1.5)
-mtext("Regions with no Differentiation",outer = TRUE,cex=1.3)
+title("Principal Component Analysis of GenomeSTRiP Deletion Genotypes by Region",outer = TRUE,cex.main=2)
+mtext("Regions with no Differentiation",outer = TRUE,cex=1.5)
 dev.off()
 
 ### Other factors - no batch effects found
@@ -205,16 +212,17 @@ delInfo <- data.frame(total=colSums(GSfeats.delGenotype.noNA * GSdels.noNA$len),
 
 delInfo <- delInfo[order(delInfo$region,delInfo$population),]
 
-pdf("Figures/GSburden_bp.pdf",14,10)
-par(oma=c(0,0,0,18))
-barplot(delInfo$total,border=delInfo$popCol,col=delInfo$popCol,main = "Total Number of Deleted Bases",xlab = "Population",ylab = "Base Pairs")
+pdf("Figures/GSburden_bp.pdf",15,10)
+par(oma=c(0,0,0,18),mar=c(4,5,4,0))
+barplot(delInfo$total,border=delInfo$popCol,col=delInfo$popCol,main = "Total Number of Deleted Bases",
+        xlab = "Population",ylab = "Base Pairs",cex.lab=1.5,cex.main=2,cex.axis=1.5)
 axis(1,c(0,cumsum(920/765*table(delInfo$region))),rep("",8))
 text(cumsum(920/765*table(delInfo$region)) - 920/765*table(delInfo$region)/2,-250000,
      c("Africa","America","South Central Asia", "East Asia","Europe","Middle East","Oceania"),
-     xpd=NA) 
-legend(1200,3.5E6,names(popCols)[c(1:21,48:53)],col = popCols[c(1:21,48:53)],pch=20,bty = 'n',xpd=NA,yjust = 0.5)
-legend(1420,3.5E6,names(popCols)[22:47],col = popCols[22:47],pch=20,bty = 'n',xpd=NA,yjust = 0.5)
-text(1410,6.2E6,expression(bold("Population")),cex=1.5,xpd=NA)
+     xpd=NA,cex=1.2) 
+legend(1150,3.4E6,popNames[c(1:21,48:53)],col = popCols[c(1:21,48:53)],pch=20,bty = 'n',xpd=NA,yjust = 0.5,cex=1.2)
+legend(1380,3.5E6,popNames[22:47],col = popCols[22:47],pch=20,bty = 'n',xpd=NA,yjust = 0.5,cex=1.2)
+text(1340,6.6E6,expression(bold("Population")),cex=1.5,xpd=NA)
 dev.off()
 
 ### By count
@@ -246,33 +254,33 @@ pdf("Figures/GSburden_count.pdf",18,12)
 par(mar=c(5,5,3,1),oma=c(1,1,4,1))
 layout(rbind(c(1,1,1,1,4),c(2,2,3,3,4)))
 barplot(delInfo.count$total,border=delInfo.count$popCol,col=delInfo.count$popCol,
-        main = "A. Total",xlab = "Population",ylab = "Count")
+        main = "A. Total",xlab = "Population",ylab = "Count",cex.lab=1.5,cex.main=2,cex.axis=1.5)
 axis(1,c(0,cumsum(920/765*table(delInfo.count$region))),rep("",8))
 text(cumsum(920/765*table(delInfo.count$region)) - 920/765*table(delInfo.count$region)/2,-50,
      c("Africa","America","South Central Asia", "East Asia","Europe","Middle East","Oceania"),
-     xpd=NA) 
+     xpd=NA,cex=1.2) 
 
 barplot(delInfoHom$total,border=delInfoHom$popCol,col=delInfoHom$popCol,ylim = c(0,350),
-        main = "B. Homozygotes",xlab = "Population",ylab = "Count")
+        main = "B. Homozygotes",xlab = "Population",ylab = "Count",cex.lab=1.5,cex.main=2,cex.axis=1.5)
 axis(1,c(0,cumsum(920/765*table(delInfoHom$region))),rep("",8))
 text(cumsum(920/765*table(delInfoHom$region)) - 920/765*table(delInfoHom$region)/2,-15,
      c("Africa","America","South Central Asia", "East Asia","Europe","Middle East","Oceania"),
-     xpd=NA) 
+     xpd=NA,cex=1.1) 
 
 barplot(delInfoHet$total,border=delInfoHet$popCol,col=delInfoHet$popCol,
-        main = "C. Heterozygotes",xlab = "Population",ylab = "Count")
+        main = "C. Heterozygotes",xlab = "Population",ylab = "Count",cex.lab=1.5,cex.main=2,cex.axis=1.5)
 axis(1,c(0,cumsum(920/765*table(delInfoHet$region))),rep("",8))
 text(cumsum(920/765*table(delInfoHet$region)) - 920/765*table(delInfoHet$region)/2,-40,
      c("Africa","America","South Central Asia", "East Asia","Europe","Middle East","Oceania"),
-     xpd=NA) 
+     xpd=NA,cex=1.1) 
 
 par(mar=c(1,1,1,1))
 plot(NA,axes=FALSE,ylim=c(0,1),xlim=c(0,1),xlab="",ylab = "")
-legend(0,0.5,names(popCols)[c(1:21,48:53)],col = popCols[c(1:21,48:53)],pch=19,bty = 'n',xpd=NA,yjust = 0.5,cex=1.2)
-legend(0.5,0.5,names(popCols)[22:47],col = popCols[22:47],pch=19,bty = 'n',xpd=NA,yjust = 0.5,cex=1.2)
-text(0.4,0.73,expression(bold("Population")),cex=1.5)
+legend(0,0.49,popNames[c(1:21,48:53)],col = popCols[c(1:21,48:53)],pch=19,bty = 'n',xpd=NA,yjust = 0.5,cex=1.5)
+legend(0.5,0.5,popNames[22:47],col = popCols[22:47],pch=19,bty = 'n',xpd=NA,yjust = 0.5,cex=1.5)
+text(0.4,0.78,expression(bold("Population")),cex=1.8)
 
-title("Number of GenomeSTRiP Deletions in Different Individuals",outer = TRUE,cex.main=1.8)
+title("Number of GenomeSTRiP Deletions in Different Individuals",outer = TRUE,cex.main=2.5)
 dev.off()
 
 ## Other metrics
@@ -287,20 +295,20 @@ delInfoMet <- data.frame(total=colSums(GSfeats.delGenotype.noNA),
 delInfoMet <- delInfoMet[order(delInfoMet$region,delInfoMet$population),]
 
 pdf("Figures/GSburden_libBatch.pdf",14,10)
-par(oma=c(1,1,3,12),mar=c(5,5,1,1))
+par(oma=c(1,1,3,14),mar=c(5,5,1,1))
 layout(rbind(c(1,1,1,2)))
 co <- c("blue","red")
 barplot(delInfoMet$total,border=co[as.factor(delInfoMet$metric)],
         col=co[as.factor(delInfoMet$metric)]
-        ,xlab = "Population",ylab = "Number of Deleted Sites",ylim = c(0,1000))
+        ,xlab = "Population",ylab = "Number of Deleted Sites",ylim = c(0,1000),cex.lab=1.7,cex.main=2,cex.axis=1.7)
 axis(1,c(0,cumsum(920/765*table(delInfoMet$region))),rep("",8))
-text(cumsum(920/765*table(delInfoMet$region)) - 920/765*table(delInfoMet$region)/2,-50,
+text(cumsum(920/765*table(delInfoMet$region)) - 920/765*table(delInfoMet$region)/2,-20,
      c("Africa","America","South Central Asia", "East Asia","Europe","Middle East","Oceania"),
-     xpd=NA) 
+     xpd=NA,cex=1.5) 
 
-boxplot(total~metric,col=co,data = delInfoMet,ylim=c(0,1000))
-title("Effect of Library Prepartion Method on Number of Called Deletions Using GenomeSTRiP",outer = TRUE,cex.main=1.7)
-legend(3,500,yjust = 0.5,legend = c("PCR","PCR Free"),fill = co,bty = "n",cex=1.5,xpd=NA)
+boxplot(total~metric,col=co,data = delInfoMet,ylim=c(0,1000),cex.axis=1.5,cex.lab=1.5)
+title("Effect of Library Prepartion Method on Number of Called Deletions Using GenomeSTRiP",outer = TRUE,cex.main=2)
+legend(2.8,500,yjust = 0.5,legend = c("PCR","PCR Free"),fill = co,bty = "n",cex=2,xpd=NA)
 dev.off()
 
 ######## Test difference in number of deletions ########
@@ -363,7 +371,7 @@ F_st <- sig/(p*(1-p))
 pdf("Figures/GSfst_hist.pdf",12,10)
 par(mar=c(5,5,4,4),oma=c(0,0,0,0))
 hist(F_st,main = expression("Distribution of Per Loci F"[st]~"for GenomSTRiP Deletion Calls"),
-     xlab = expression("F"[st]),col = "cornflowerblue",ylim = c(0,14000))
+     xlab = expression("F"[st]),col = "cornflowerblue",ylim = c(0,14000),cex.main=2.2,cex.lab=1.5,cex.axis=1.5)
 dev.off()
 
 topFst <- F_st[order(F_st,decreasing = TRUE)[1:10]]
@@ -426,12 +434,12 @@ pdf("Figures/GSsitefreq.pdf",12,10)
 par(mar=c(5,5,3,1))
 hist(log10(sitefreq[!names(sitefreq) %in% paste0("GScall_",impactCalls)]),xlim=c(0,4),ylim = c(0,3),
      col=rgb(0,0,1,0.5),border = rgb(0,0,1,0.5),freq=FALSE,xaxt="n",xlab = "Number of Occurances",
-     main = "Distribution of the Number of Observations of Deletion Alleles")
+     main = "Distribution of the Number of Observations of Deletion Alleles",cex.main=2,cex.axis=1.5,cex.lab=1.5)
 axis(1,at=c(0,1,2,3,4),labels = c(1,10,100,1000,10000))
 hist(log10(sitefreq[names(sitefreq) %in% paste0("GScall_",impactCalls)]),add=TRUE,
      col=rgb(1,0,0,0.5),border = rgb(1,0,0,0.5),freq=FALSE)
-legend("right",legend = c("Low","High"),fill = c("blue","red"),bty="n",title = expression(bold("Impact")))
-mtext("Using GenomeSTRiP Calls",padj = 0.5)
+legend("right",legend = c("Low","High"),fill = c("blue","red"),bty="n",title = expression(bold("Impact")),cex=1.5)
+mtext("Using GenomeSTRiP Calls",padj = 0.5,cex=1.5)
 dev.off()
 
 region <- "MIDDLE_EAST"

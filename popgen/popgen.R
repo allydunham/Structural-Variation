@@ -60,6 +60,12 @@ setwd("~/Project")
 load("results/popgenImport.Rdata")
 source("scripts/popgenFunctions.R")
 
+## Population names, as ordered by popCols
+popNames <- c("Mbuti","Biaka","Mandenka","Yoruba","San","Bantu (S. Africa)","Bantu (Kenya)","Colombian","Surui","Maya","Karitiana","Pima","Brahui",
+              "Balochi","Hazara","Makrani","Sindhi","Pathan","Kalash","Burusho","Uygur","Cambodian","Japanese","Han","Yakut","Tujia","Yi","Miao",
+              "Oroqen","Daur","Mongola","Hezhen","Xibo","Han (North)","Dai","Lahu","She","Naxi","Tu","French","Sardinian","Orcadian","Russian",
+              "Italian","Tuscan","Basque","Adygei","Druze","Bedouin","Palestinian","Mozabite","Melanesian","Papuan")
+
 tenXfreqs <- rowSums(tenXfeats)/dim(tenXfeats)[2]
 tenXprops <- colSums(tenXfeats)/dim(tenXfeats)[1]
 
@@ -184,15 +190,16 @@ delInfo <- data.frame(total=colSums(BDfeats),
 delInfo <- delInfo[order(delInfo$region,delInfo$population),]
 
 pdf("Figures/BDburden.pdf",16,10)
-par(oma=c(1,1,1,16),mar=c(4,5,4,4))
+par(oma=c(1,1,1,17),mar=c(4,5,4,4))
 barplot(delInfo$total,border=delInfo$popCol,col=delInfo$popCol,main = "Total Number of Deleted Sites",
-        xlab = "Population",ylab = "Deleted Sites")
+        xlab = "Population",ylab = "Deleted Sites",cex.main=2,cex.axis=1.5,cex.lab=1.5)
 axis(1,c(0,cumsum(920/765*table(delInfo$region))),rep("",8))
 text(cumsum(920/765*table(delInfo$region)) - 920/765*table(delInfo$region)/2,-100,
      c("Africa","America","South Central Asia", "East Asia","Europe","Middle East","Oceania"),
-     xpd=NA) 
-legend(1000,1250,names(popCols)[c(1:21,48:53)],col = popCols[c(1:21,48:53)],pch=20,bty = 'n',xpd=NA,yjust = 0.5,cex=0.9)
-legend(1150,1250,names(popCols)[22:47],col = popCols[22:47],pch=20,bty = 'n',xpd=NA,yjust = 0.5,cex=0.9)
+     xpd=NA,cex=1.3) 
+legend(1000,1150,popNames[c(1:21,48:53)],col = popCols[c(1:21,48:53)],pch=20,bty = 'n',xpd=NA,yjust = 0.5,cex=1.2)
+legend(1200,1150,popNames[22:47],col = popCols[22:47],pch=20,bty = 'n',xpd=NA,yjust = 0.5,cex=1.2)
+text(1170,2250,expression(bold("Population")),xpd=NA)
 dev.off()
 
 ## Only common deletions
@@ -251,20 +258,20 @@ delInfo.met <- data.frame(total=colSums(BDfeats),
 delInfo.met <- delInfo.met[order(delInfo.met$region,delInfo.met$population),]
 
 pdf("Figures/BDburden_libBatch.pdf",14,10)
-par(oma=c(1,1,3,12),mar=c(5,5,1,1))
+par(oma=c(1,1,4,14),mar=c(5,5,1,1))
 layout(rbind(c(1,1,1,2)))
 co <- c("blue","red")
 barplot(delInfo.met$total,border=co[as.factor(delInfo.met$metric)],
         col=co[as.factor(delInfo.met$metric)],
-        xlab = "Population",ylab = "Number of Deleted Sites")
-axis(1,c(0,cumsum(920/765*table(delInfo.met$region))),rep("",8))
+        xlab = "Population",ylab = "Number of Deleted Sites",cex.axis=1.5,cex.lab=1.7)
+axis(1,c(0,cumsum(920/765*table(delInfo.met$region))),rep("",8),cex.axis=1.5)
 text(cumsum(920/765*table(delInfo.met$region)) - 920/765*table(delInfo.met$region)/2,-100,
      c("Africa","America","South Central Asia", "East Asia","Europe","Middle East","Oceania"),
-     xpd=NA) 
+     xpd=NA,cex=1.5) 
 
-boxplot(total ~ metric,data = delInfo.met,col = co)
-legend(3,1250,yjust = 0.5,legend = c("PCR","PCR Free"),fill=co,bty = "n",cex = 1.5)
-title("Effect of Library Prepartion Method on Number of Called Deletions Using BreakDancer",outer = TRUE,cex.main=1.7)
+boxplot(total ~ metric,data = delInfo.met,col = co,cex.lab=1.7,cex.axis=1.5)
+legend(2.8,1250,yjust = 0.5,legend = c("PCR","PCR Free"),fill=co,bty = "n",cex = 2,xpd=NA)
+title("Effect of Library Prepartion Method on Number of Called Deletions Using BreakDancer",outer = TRUE,cex.main=2)
 dev.off()
 layout(1)
 
@@ -332,12 +339,12 @@ pdf("Figures/BDsitefreq.pdf",12,10)
 par(mar=c(5,5,3,1))
 hist(log10(sitefreq[!names(sitefreq) %in% paste0("GScall_",impactCalls)]),xlim=c(0,3),ylim = c(0,3),
      col=rgb(0,0,1,0.5),border = rgb(0,0,1,0.5),freq=FALSE,xaxt="n",xlab = "Number of Occurances",
-     main = "Distribution of the Number of Observations of Deletion Alleles")
+     main = "Distribution of the Number of Observations of Deletion Alleles",cex.main=2,cex.axis=1.5,cex.lab=1.5)
 axis(1,at=c(0,1,2,3),labels = c(1,10,100,1000))
 hist(log10(sitefreq[impactCalls]),add=TRUE,
      col=rgb(1,0,0,0.5),border = rgb(1,0,0,0.5),freq=FALSE)
-legend("right",legend = c("Low","High"),fill = c("blue","red"),bty="n",title = expression(bold("Impact")))
-mtext("Using BreakDancer Calls",padj = 0.5)
+legend("right",legend = c("Low","High"),fill = c("blue","red"),bty="n",title = expression(bold("Impact")),cex=1.5)
+mtext("Using BreakDancer Calls",padj = 0.5,cex=1.5)
 dev.off()
 
 hist(sitefreq[impactCalls],breaks = 765,xlim = c(0,800))
