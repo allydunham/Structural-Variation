@@ -32,7 +32,7 @@ Equivalent script to *preProcess3.py* but using the REST client (*misc/restClien
 Command line script to group region depth reading proced from bam read files using *samtools depth*, into lists of regions defined in an input bed file.
 
 #### *combinedQC.R*
-R script containing the code used to train and cross-validate teh various models. It was used interactively to train all the models (see example *combinedQC_rawDataOnly.R*), optimise them and determine which factors to use.
+R script containing the code used to train and cross-validate the various models. It was used interactively to train all the models (see example *combinedQC_rawDataOnly.R*), optimise them and determine which factors to use.
 
 #### *combinedQC_rawDataOnly.R*
 Equivalent script only using the raw longranger data and before tuning. It was used to train the original models.
@@ -50,13 +50,13 @@ Command line R script implementing the final random forest model. It supports tr
 
 ## Filtering Scripts
 #### *bd_filtering.R*
-Script containing the code used to determine filtering criteria for the BreakDancer calls, based on the set which overlapped with the high quality filtered 10X calls. The selected filtering criteria are then tested against the overlap set and the GENOMESTRiP results. The filtering plots seen in the report are also produced here.
+Script containing the code used to determine filtering criteria for the BreakDancer calls, based on the set which overlapped with the high quality filtered 10X calls. The selected filtering criteria are then tested against the overlap set and the GenomeSTRiP results. The filtering plots seen in the report are also produced here.
 
 #### *bd_10X_overlap.py*
 Command line tool to determine BreakDancer variant calls which overlap with 10X longranger calls, based on a customisable minimum overlap proportion. A binary search is used to narrow down the region of calls to check, which greatly increases speed but means inputs must be sorted. The BreakDancer calls are loaded into memory and then 10X calls are streamed, determining overlap sequentially to reduce memory requirements.
 
 #### *gs_bd_overlap.py*
-Equivalent script to *bd_10X_overlap.py* but determining which GENOMESTRiP calls overlap with BreakDancer ones, using the same algorithm but adapted to the difeferent format. BreakDancer calls are loaded into memory since the GENOMESTRiP output tends to be a much larger file.
+Equivalent script to *bd_10X_overlap.py* but determining which GenomeSTRiP calls overlap with BreakDancer ones, using the same algorithm but adapted to the difeferent format. BreakDancer calls are loaded into memory since the GenomeSTRiP output tends to be a much larger file.
 
 #### *bd_filter.py*
 Command line tool to apply the selected filtering to a BreakDancer output file, with options to specify filters for:
@@ -64,11 +64,11 @@ Command line tool to apply the selected filtering to a BreakDancer output file, 
 * Quality Score (lower bound)
 * Read Depth (upper and lower bounds)
 * Supporting Read Ratio (lower bound)
-* Copynumber
+* Copynumber (upper and lower bounds)
 * Variant Type
 * Chromosome (Restrict to the cannonical 1-22,X,Y)
 * Centromere (Filter Ensembl GRCh38 centromere regions)
-* Genomic Gaps (based ona supplied gap table)
+* Genomic Gaps (based on a supplied gap table)
 
 ## Population genetics Scripts
 #### *merge10X2bed.py* and *mergeBD2bed.py*
@@ -78,7 +78,7 @@ Equivalent scripts which merge input 10X or BreakDancer output files into a sing
 Script to convert merged and clustered BreakDancer and 10X call sets into a binary table of features. The table has rows for each calls and columns indicating whether the call was found in each sample.
 
 #### *gsProcess.py*
-Script to process GENOMESTRiP output, translating it into (optionally) a bed file, an information table and a copynumber table, with copynumber per call on each row in columns for each sample. The information table unpacks the VCF information field into a tsv file for easy analysis in R.
+Script to process GenomeSTRiP output, translating it into (optionally) a bed file, an information table and a copynumber table, with copynumber per call on each row in columns for each sample. The information table unpacks the VCF information field into a tsv file for easy analysis in R.
 
 #### *popgen.R*
 R script containing code to perform all population genetic analyses on the BreakDancer callset and produce the output plots. It performs:
@@ -91,13 +91,13 @@ R script containing code to perform all population genetic analyses on the Break
 It also supports data saving and preloading to prevent the long import being done every time.
 
 #### *gsPopgen.R*
-Equivalent script to *popgen.R* but using the GENOMESTRiP calls. It performs the same set of analysis but extends them, using genotype information to calculate real Fst and burden values and partitions PCA by region.
+Equivalent script to *popgen.R* but using the GenomeSTRiP calls. It performs the same set of analysis but extends them, using genotype information to calculate real Fst and burden values and partitions PCA by region.
 
 #### *importPopgen.R*
 Script to import the population genetic data (apart from VEP data which is imported in the appropriate script). It was separated out to tidy the two primary scripts.
 
 #### *popgenFunctions.R*
-Script containing supporting population genetic functions, primarily used to convert feature tables into GenePop format and to read in the pairwise statistics tables produced by *diveRsity*'s *diffCalc* function, used over *fastDivPart* because of the laters very high memory usage with this dataset (>90GB RAM without bootstrapping, *diffCalc* used <60GB with 10 bootstraps).
+Script containing supporting population genetic functions, primarily used to convert feature tables into GenePop format and to read in the pairwise statistics tables produced by *diveRsity*'s *diffCalc* function, used over *fastDivPart* because of the laters very high memory usage with this dataset (>90GB RAM without bootstrapping, *diffCalc* used <60GB with 10 bootstraps). Even so only 10 bootstraps were feasible in a reasonable time with the memory available.
 
 
 ## Miscellaneous Scripts
@@ -111,6 +111,5 @@ Simple script to condense a list of samples and their associated information int
 Simple REST client for querying the Ensembl database. It has sequence retrieval built in specifically alongside a general querying function, with automatic rate limiting to prevent server timeout.
 
 #### *vcf2bed.py*
-Simple script to convert a VCF file, for instance as produced by GENOMESTRiP, to bed format. Most columns are already available but the end position needs to be extracted from the VCF information field. Regions can optionally be padded, for
- instance to extract flanking sequence. Conversion from 1-based to 0-based is performed.
+Simple script to convert a VCF file, for instance as produced by GenomeSTRiP, to bed format. Most columns are already available but the end position needs to be extracted from the VCF information field. Regions can optionally be padded, for instance to extract flanking sequence. Conversion from 1-based to 0-based is performed.
  
