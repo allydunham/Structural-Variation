@@ -116,6 +116,7 @@ plot(popDend10X)
 
 ############ PCA ############
 pcBD <- prcomp(t(BDfeats),tol=10^-10)
+
 vars <- round(pcBD$sdev^2/sum(pcBD$sdev^2) * 100)
 pdf("Figures/BDpca.pdf",10,14)
 par(oma=c(4,4,4,4))
@@ -133,8 +134,8 @@ plot(pcBD$x[,4],pcBD$x[,3],pch=20,col=samplePopColsBD,xlab = paste0("PC4 (",vars
 plot(NA,axes=FALSE,ylim=c(0,1),xlim=c(0,1),xlab="",ylab = "")
 legend(0.5,0.5,xjust = 0.5,yjust=0.5, legend = c("Africa","America","Central and S. Asia",
                                     "E. Asia","Europe","Middle East","Oceania"),
-       col=c("darkorange","hotpink","green","blue","red","yellow","purple"),pch=20,xpd=NA,
-       title = expression(bold("Sample Region")),bty="n",cex=1.5)
+       fill=c("darkorange","hotpink","green","blue","red","yellow","purple"),xpd=NA,
+       title = expression(bold("Sample Region")),bty="n",cex=1.8)
 
 title("Principal Component Analysis of BreakDancer Deletion Calls",outer = TRUE,cex.main=2)
 dev.off()
@@ -202,6 +203,11 @@ legend(1200,1150,popNames[22:47],col = popCols[22:47],pch=20,bty = 'n',xpd=NA,yj
 text(1170,2250,expression(bold("Population")),xpd=NA)
 dev.off()
 
+## test comparisons between PCR samples
+delInfo.pcrFree <- delInfo[which(rownames(delInfo) %in% pops[pops$library_type == "PCRfree","sample"]),]
+delInfo.pcrFree <- delInfo.pcrFree[!delInfo.pcrFree$region %in% c("AFRICA","OCEANIA"),]
+
+
 ## Only common deletions
 BDfeats.noSingles <- BDfeats[rowSums(BDfeats) > 100,]
 n <- sapply(strsplit(rownames(BDfeats.noSingles),"_"),function(x){as.numeric(x[2])})
@@ -263,15 +269,15 @@ layout(rbind(c(1,1,1,2)))
 co <- c("blue","red")
 barplot(delInfo.met$total,border=co[as.factor(delInfo.met$metric)],
         col=co[as.factor(delInfo.met$metric)],
-        xlab = "Population",ylab = "Number of Deleted Sites",cex.axis=1.5,cex.lab=1.7)
+        xlab = "Population",ylab = "Number of Deleted Sites",cex.axis=1.7,cex.lab=1.8)
 axis(1,c(0,cumsum(920/765*table(delInfo.met$region))),rep("",8),cex.axis=1.5)
 text(cumsum(920/765*table(delInfo.met$region)) - 920/765*table(delInfo.met$region)/2,-100,
      c("Africa","America","South Central Asia", "East Asia","Europe","Middle East","Oceania"),
      xpd=NA,cex=1.5) 
 
-boxplot(total ~ metric,data = delInfo.met,col = co,cex.lab=1.7,cex.axis=1.5)
-legend(2.8,1250,yjust = 0.5,legend = c("PCR","PCR Free"),fill=co,bty = "n",cex = 2,xpd=NA)
-title("Effect of Library Prepartion Method on Number of Called Deletions Using BreakDancer",outer = TRUE,cex.main=2)
+boxplot(total ~ metric,data = delInfo.met,col = co,cex.lab=1.9,cex.axis=1.7)
+legend(2.8,1250,yjust = 0.5,legend = c("PCR","PCR-Free"),fill=co,bty = "n",cex = 2,xpd=NA,title = expression(bold("Preparation")))
+title("Effect of Library Prepartion Method on Number of Deletions Called Using BreakDancer",outer = TRUE,cex.main=2.5)
 dev.off()
 layout(1)
 
@@ -335,10 +341,11 @@ df_fst <- df_fst[order(df_fst$fst,decreasing = TRUE),]
 sitefreq <- rowSums(BDfeats)
 impactCalls <- unique(VEPimpactsRed[VEPimpactsRed$IMPACT %in% c("MODERATE","HIGH"),"call"])
 
+## Old plot (histogram colours unclear in print)
 pdf("Figures/BDsitefreq.pdf",12,10)
 par(mar=c(5,5,3,1))
 hist(log10(sitefreq[!names(sitefreq) %in% paste0("GScall_",impactCalls)]),xlim=c(0,3),ylim = c(0,3),
-     col=rgb(0,0,1,0.5),border = rgb(0,0,1,0.5),freq=FALSE,xaxt="n",xlab = "Number of Occurances",
+     col=rgb(0,0,1),border = rgb(0,0,1),freq=FALSE,xaxt="n",xlab = "Number of Occurances",
      main = "Distribution of the Number of Observations of Deletion Alleles",cex.main=2,cex.axis=1.5,cex.lab=1.5)
 axis(1,at=c(0,1,2,3),labels = c(1,10,100,1000))
 hist(log10(sitefreq[impactCalls]),add=TRUE,
@@ -347,8 +354,21 @@ legend("right",legend = c("Low","High"),fill = c("blue","red"),bty="n",title = e
 mtext("Using BreakDancer Calls",padj = 0.5,cex=1.5)
 dev.off()
 
-hist(sitefreq[impactCalls],breaks = 765,xlim = c(0,800))
+nonImp <- hist(log10(sitefreq[!names(sitefreq) %in% paste0("GScall_",impactCalls)]),plot=FALSE)
+imp <- hist(log10(sitefreq[impactCalls]),plot=FALSE)
 
+probs <- rbind(nonImp$counts/sum(nonImp$counts),imp$counts/sum(imp$counts))
+
+pdf("Figures/BDsitefreq.pdf",12,10)
+par(mar=c(5,5,6,6))
+barplot(probs,beside = TRUE,space = c(0,0),col=c("blue","red"),ylim = c(0,0.5),xlim=c(0,3),width = 0.1,
+        xlab = "Number of Occurances",ylab = "Frequency",
+        main = "Distribution of the Frequency of Deletion Alleles",cex.main=2,cex.axis=1.5,cex.lab=1.5)
+axis(1,at=seq(0,3,0.2),labels = rep("",16),tck=-0.01)
+axis(1,at=c(0,1,2,3),labels = c(1,10,100,1000),cex.axis=1.5)
+legend(3.1,0.25,legend = c("Low","High"),fill = c("blue","red"),bty="n",title = expression(bold("Impact")),cex=1.5,xpd=NA)
+mtext("Using BreakDancer Calls",cex=1.5)
+dev.off()
 
 
 ############ Functional Analysis ############

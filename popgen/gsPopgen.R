@@ -114,7 +114,7 @@ dev.off()
 ############ PCA ############
 pcGS <- prcomp(t(GSfeats.delGenotype.noNA),tol=10^-10)
 par(mar=c(4,4,4,4),oma=c(1,1,1,1))
-plot(pcGS$x[,1],pcGS$x[,2],pch=20,col=samplePopColsGS)
+plot(pcGS$x[,7],pcGS$x[,8],pch=20,col=samplePopColsGS)
 
 library(rgl)
 plot3d(pcGS$x[,1],pcGS$x[,2],pcGS$x[,3],col=samplePopColsGS)
@@ -135,8 +135,8 @@ plot(pcGS$x[,4],pcGS$x[,3],pch=20,col=samplePopColsGS,xlab = paste0("PC4 (",vars
 plot(NA,axes=FALSE,ylim=c(0,1),xlim=c(0,1),xlab="",ylab = "")
 legend(0.5,0.5,xjust = 0.5,yjust=0.5, legend = c("Africa","America","Central and S. Asia",
                                                  "E. Asia","Europe","Middle East","Oceania"),
-       col=c("darkorange","hotpink","green","blue","red","yellow","purple"),pch=20,xpd=NA,
-       title = expression(bold("Sample Region")),bty="n",cex=1.5)
+       fill=c("darkorange","hotpink","green","blue","red","yellow","purple"),xpd=NA,
+       title = expression(bold("Sample Region")),bty="n",cex=1.8)
 
 title("Principal Component Analysis of GenomeSTRiP Deletion Calls",outer = TRUE,cex.main=2)
 dev.off()
@@ -308,7 +308,7 @@ text(cumsum(920/765*table(delInfoMet$region)) - 920/765*table(delInfoMet$region)
 
 boxplot(total~metric,col=co,data = delInfoMet,ylim=c(0,1000),cex.axis=1.5,cex.lab=1.5)
 title("Effect of Library Prepartion Method on Number of Called Deletions Using GenomeSTRiP",outer = TRUE,cex.main=2)
-legend(2.8,500,yjust = 0.5,legend = c("PCR","PCR Free"),fill = co,bty = "n",cex=2,xpd=NA)
+legend(2.8,500,yjust = 0.5,legend = c("PCR","PCR-Free"),fill = co,bty = "n",cex=2,xpd=NA)
 dev.off()
 
 ######## Test difference in number of deletions ########
@@ -400,20 +400,35 @@ df_fst <- merge(df_fst,GSdels,by.x = "call",by.y = "ID")
 df_fst <- df_fst[order(df_fst$fst,decreasing = TRUE),]
 df_fst$highFreq <- df_fst$call %in% rownames(GSfeats.delGenotype.noNA)[rowSums(GSfeats.delGenotype.noNA > 0) > 700]
 
+dis <- read.csv("results/60-targets-associated_diseases.csv",stringsAsFactors = FALSE)
+colnames(dis) <- c("Disease","FullName","pVal","NumTargets","TheraputicArea","TopTargets","AllTargets")
+dis$TopTargets <- lapply(dis$TopTargets,function(x){strsplit(x," ")[[1]]})
+dis$AllTargets <- lapply(dis$AllTargets,function(x){strsplit(x," ")[[1]]})
+
+
 #### pairwise Fst ####
 library(gplots)
 pairwiseMetrics <- readPairwiseTables("results/GSpairwiseFst/pairwise.txt")
 nam <- rownames(pairwiseMetrics$Fst)
 nam[c(9,10,30,44,53)] <- c("Biaka","Mbuti","Bantu (SA)","Han (North)","Bantu (Kenya)")
 
-pdf("Figures/fst_heatmap.pdf",20,16)
+col <- gsub("yellow","gold",unname(sapply(rownames(pairwiseMetrics$Fst),function(x){regCols[popSummaries[popSummaries$Population == x,"Region"]]})))
+
+f <- function(){legend(-0.2,1,xjust = 0.5,yjust=0.5, legend = c("Africa","America","Central and S. Asia",
+                                                                 "E. Asia","Europe","Middle East","Oceania"),
+                       fill=c("darkorange","hotpink","green","blue","red","gold","purple"),xpd=NA,
+                       title = expression(bold("Sample Region")),bty="n",cex=2.5)
+}
+
+pdf("Figures/GSfst_heatmap.pdf",30,20)
 heatmap.2(as.matrix(pairwiseMetrics$Fst),symm = TRUE,col=colorRampPalette(c("blue","red"))(256),
-          revC = TRUE,trace = "none",dendrogram = "row",symbreaks = FALSE,margins = c(12,14),
-          symkey = FALSE,key.title = "Colour Key and Histogram",key.par = list(mar=c(4,4,4,14),cex.main=2,cex.lab=2),
-          density.info = "none",
-          key.xlab = expression("F"[st]),cexRow = 2,cexCol = 2,labRow = nam,labCol = nam,
-          lmat = matrix(c(3,2,0,3,1,4),ncol = 2),lhei = c(0.5,6,1),lwid = c(1.5,6))
-title(expression("Pairwise F"[st]~"Values Across All Populations"),cex.main=2.5)
+          revC = FALSE,trace = "none",dendrogram = "row",symbreaks = FALSE,margins = c(14,14),
+          symkey = FALSE,key.title = "",key.par = list(mar=c(8,4,3,16),cex.lab=2.5,cex.axis=2.2),
+          density.info = "none",key.xlab = expression("F"[st]),cexRow = 2.3,cexCol = 2.3,
+          labRow = nam,labCol = nam,
+          lmat = rbind(c(0,0,4),c(3,1,2),c(0,0,5)),lhei = c(0.5,6,1),lwid = c(1.7,0.1,6),
+          RowSideColors = col,colCol = col,colRow = col,extrafun = f)
+title(expression("Pairwise F"[st]~"Values Across All Populations"),cex.main=3)
 dev.off()
 
 diveRsityStats <- read.table("results/GSpairwiseFst/std_stats.txt",header=TRUE)
@@ -505,10 +520,53 @@ legend("right",legend = c("Low","High"),fill = c("blue","red"),bty="n",title = e
 mtext("Using GenomeSTRiP Calls",padj = 0.5,cex=1.5)
 dev.off()
 
+nonImp <- hist(log10(sitefreq[!names(sitefreq) %in% paste0("GScall_",impactCalls)]),plot=FALSE,breaks = seq(0,4,0.2))
+imp <- hist(log10(sitefreq[impactCalls]),plot=FALSE,breaks = seq(0,4,0.2))
+
+probs <- rbind(nonImp$counts/sum(nonImp$counts),imp$counts/sum(imp$counts))
+
+pdf("Figures/GSsitefreq.pdf",12,10)
+par(mar=c(5,5,6,6))
+barplot(probs,beside = TRUE,space = c(0,0),col=c("blue","red"),ylim = c(0,0.5),xlim=c(0,4),width = 0.1,
+        xlab = "Number of Occurances",ylab = "Frequency",
+        main = "Distribution of the Frequency of Deletion Alleles",cex.main=2,cex.axis=1.5,cex.lab=1.5)
+axis(1,at=seq(0,4,0.2),labels = rep("",21),tck=-0.01)
+axis(1,at=c(0,1,2,3,4),labels = c(1,10,100,1000,10000),cex.axis=1.5)
+legend(4.1,0.25,legend = c("Low","High"),fill = c("blue","red"),bty="n",title = expression(bold("Impact")),cex=1.5,xpd=NA)
+mtext("Using GenomeSTRiP Calls",padj = 0,cex=1.5)
+dev.off()
+
 region <- "MIDDLE_EAST"
 ps <- popsGS[popsGS$region == region,"sample_accession"]
 sitefreq.reg <- rowSums(GSfeats.delGenotype.noNA[,ps])
 hist(sitefreq.reg,breaks = 765)
 
+### Number of variants against distance from Africa - not published
+# Requires distance functions etc. loaded from above and delInfo.count
+EAfrica.coords <- deg2rad(c(0,36))
+loc$dist <- apply(loc,1,function(x){greatDist(deg2rad(as.numeric(x[c(4,5)])),EAfrica.coords)})
+loc$count <- sapply(loc$Population,function(x){mean(delInfo.count[delInfo.count$population == x,"total"])})
 
+delInfo.count$dist <- sapply(delInfo.count$population,function(x){loc[loc$Population == x,"dist"]})
+plot(delInfo.count$dist,delInfo.count$total,col=delInfo.count$popCol,pch=20)
+
+fit <- lm(total ~ dist,data = delInfo.count)
+
+# Call:
+#   lm(formula = total ~ dist, data = delInfo.count)
+# 
+# Residuals:
+#   Min     1Q Median     3Q    Max 
+# -78.58 -26.08  -5.12  19.09 441.42 
+# 
+# Coefficients:
+#   Estimate Std. Error t value Pr(>|t|)    
+# (Intercept)  5.715e+02  3.279e+00  174.27  < 2e-16 ***
+#   dist        -3.335e-06  4.537e-07   -7.35 4.38e-13 ***
+#   ---
+#   Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+# 
+# Residual standard error: 44.08 on 915 degrees of freedom
+# Multiple R-squared:  0.05576,	Adjusted R-squared:  0.05472 <- not found to explain much variance in this data
+# F-statistic: 54.03 on 1 and 915 DF,  p-value: 4.38e-13
 
