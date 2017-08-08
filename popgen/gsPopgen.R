@@ -550,7 +550,7 @@ loc$count <- sapply(loc$Population,function(x){mean(delInfo.count[delInfo.count$
 delInfo.count$dist <- sapply(delInfo.count$population,function(x){loc[loc$Population == x,"dist"]})
 plot(delInfo.count$dist,delInfo.count$total,col=delInfo.count$popCol,pch=20)
 
-fit <- lm(total ~ dist,data = delInfo.count)
+fit <- lm(total ~ dist,data = delInfo.count[!delInfo.count$region == "AFRICA",])
 
 # Call:
 #   lm(formula = total ~ dist, data = delInfo.count)
