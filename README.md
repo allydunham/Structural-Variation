@@ -3,7 +3,7 @@
 **Affiliation**: University of Cambridge & Welcome Trust Sanger Institute  
 **Email**: asd43@cam.ac.uk
 
-This repository contains the code used in my MPhil project, titled "Structural Variation in Human Populations", for reference and future use. This project was carried out with the Tyler-Smith group at the Sanger Institute as part of the 'Computational Biology' MPhil course at DAMTP, University of Cambridge.
+This repository contains the code used in my MPhil project, titled "Structural Variation in Human Populations", for reference and future use. This project was carried out with the Tyler-Smith group at the Sanger Institute as part of the 'Computational Biology' MPhil course at DAMTP, University of Cambridge. The work went on to be included in [Almarri et al. (2020)](https://doi.org/10.1016/j.cell.2020.05.024).
 
 ## Folders
 * *qualityControl* - Scripts used for QC of the 10X variant calls
